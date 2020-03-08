@@ -132,7 +132,7 @@ public class ProfileServlet extends HttpServlet {
      */
     JsonObject validateLoginAndReturnResult(String name, String pwd) throws SQLException {
         JsonObject result = new JsonObject();
-        String query = "SELECT user FROM users WHERE username = ? AND pwd = ?";
+        String query = "SELECT * FROM users WHERE username = ? AND pwd = ?";
         System.out.println("name:" + name + " , passwd : " + pwd);
         PreparedStatement pstmt = conn.prepareStatement(query);
         pstmt.setString(1, name);
