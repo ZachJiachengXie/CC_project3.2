@@ -74,6 +74,8 @@ public class ProfileServlet extends HttpServlet {
      * @throws SQLException           on a database access error or other errors
      */
     public ProfileServlet() throws ClassNotFoundException, SQLException {
+        System.out.println("mysqlHost:" + mysqlHost + " mysqlName:" + mysqlName + " mysqlPwd:" + mysqlPwd);
+
         conn = getDBConnection();
     }
 
