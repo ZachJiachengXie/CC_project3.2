@@ -140,7 +140,7 @@ public class ProfileServlet extends HttpServlet {
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
             result.addProperty("name", rs.getString("username"));
-            result.addProperty("profile", rs.getString("profile_image_url"));
+            result.addProperty("profile", rs.getString("profile_photo_url"));
         } else {
             result.addProperty("name", "Unauthorized");
             result.addProperty("profile", "#");
