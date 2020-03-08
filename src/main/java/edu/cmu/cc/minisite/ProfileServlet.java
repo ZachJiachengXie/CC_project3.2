@@ -7,9 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Objects;
 
 /**
@@ -106,7 +104,15 @@ public class ProfileServlet extends HttpServlet {
             throws IOException {
         String name = request.getParameter("id");
         String pwd = request.getParameter("pwd");
-        JsonObject result = validateLoginAndReturnResult(name, pwd);
+        JsonObject result = new JsonObject();
+
+        try {
+            result = validateLoginAndReturnResult(name, pwd);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            result.addProperty("name", "Unauthorized");
+            result.addProperty("profile", "#");
+        }
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
@@ -122,22 +128,13 @@ public class ProfileServlet extends HttpServlet {
      * @param pwd   The password supplied via the HttpServletRequest
      * @return A JsonObject with the servlet's response
      */
-    JsonObject validateLoginAndReturnResult(String name, String pwd) {
+    JsonObject validateLoginAndReturnResult(String name, String pwd) throws SQLException {
         JsonObject result = new JsonObject();
         String query = "SELECT user FROM users WHERE username = ? AND pwd = ?";
         System.out.println("name:" + name + " , passwd : " + pwd);
-
-        // TODO: To be implemented
-        // Use PreparedStatements, use ResultSet.getString(String columnLabel)
-        // instead of ResultSet.getString(int columnIndex) for the test cases to work.
-        // You may also look at them for expected behavior.
-        // Ensure you match the schema of the JsonObject as per the expected
-        // response of the service, and never pass/store unhashed passwords!
-
-        PreparedStatement pstmt = conn.preparedStatement(query);
+        PreparedStatement pstmt = conn.prepareStatement(query);
         pstmt.setString(1, name);
         pstmt.setString(2, pwd);
-
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
             result.addProperty("name", rs.getString("username"));
