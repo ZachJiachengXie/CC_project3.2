@@ -134,7 +134,7 @@ public class ProfileServlet extends HttpServlet {
         // Ensure you match the schema of the JsonObject as per the expected
         // response of the service, and never pass/store unhashed passwords!
 
-        PreparedStatement pstmt = conn.PreparedStatement(query);
+        PreparedStatement pstmt = conn.preparedStatement(query);
         pstmt.setString(1, name);
         pstmt.setString(2, pwd);
 
