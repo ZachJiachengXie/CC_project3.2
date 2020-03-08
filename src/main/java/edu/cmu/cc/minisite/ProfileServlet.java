@@ -125,6 +125,7 @@ public class ProfileServlet extends HttpServlet {
     JsonObject validateLoginAndReturnResult(String name, String pwd) {
         JsonObject result = new JsonObject();
         String query = "SELECT user FROM users WHERE username = ? AND pwd = ?";
+        System.out.println("name:" + name + " , passwd : " + pwd);
 
         // TODO: To be implemented
         // Use PreparedStatements, use ResultSet.getString(String columnLabel)
