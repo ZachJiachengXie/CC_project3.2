@@ -1,10 +1,16 @@
 package edu.cmu.cc.minisite;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+
+
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,9 +20,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
-
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Sorts.descending;
+import static com.mongodb.client.model.Sorts.orderBy;
+import static com.mongodb.client.model.Projections.excludeId;
 /**
  * Task 3:
  * Implement your logic to return all the comments authored by this user.
@@ -82,11 +93,33 @@ public class HomepageServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         String id = request.getParameter("id");
         // TODO: To be implemented
+        result.add("comments", getComments(id));
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
         writer.write(result.toString());
         writer.close();
+    }
+
+    /**
+     * Method to perform the SQL query, retrieve the results and
+     * construct and return a JsonObject with the expected result
+     *
+     * @param id  The username supplied via the HttpServletRequest
+     * @return A JsonObject with the servlet's response
+     */
+    public JsonArray getComments(String id) {
+        JsonArray result = new JsonArray();
+        MongoCursor<Document> cursor = collection.find(eq("uid", id)).sort(orderBy(descending("ups", "timestamp"))).projection(excludeId()).iterator();
+        try {
+           while (cursor.hasNext()) {
+                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+                result.add(jsonObject);
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
     }
 }
 
