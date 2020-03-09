@@ -229,6 +229,7 @@ public class TimelineServlet extends HttpServlet {
             JsonArray comments = new JsonArray();
             for (JsonElement followeeElem : myFollowees) {
                 JsonObject followee = followeeElem.getAsJsonObject();
+                System.out.println("!!!followee: !!!" + followee.toString());
                 comments.addAll(proccessHotCommentsForUser(followee.get("uid").getAsString(), 30));
             }
             result.add("comments", comments);
