@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
+import static com.mongodb.client.model.Filters.or;
 import static com.mongodb.client.model.Projections.excludeId;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.Objects;
+
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.ArrayList;
 
 /**
  * In this task you will populate a user's timeline.
