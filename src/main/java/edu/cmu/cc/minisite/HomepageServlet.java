@@ -91,30 +91,40 @@ public class HomepageServlet extends HttpServlet {
                          final HttpServletResponse response) throws ServletException, IOException {
 
         JsonObject result = new JsonObject();
-        JsonArray comments = new JsonArray();
         String id = request.getParameter("id");
         // TODO: To be implemented
-        Bson id_filter = eq("uid", id);
-        Bson ups_sort = descending("ups");
-        Bson timestamp_sort = descending("timestamp");
-        Bson ups_timestamp_sort = orderBy(ups_sort, timestamp_sort);
-        Bson excludeId = excludeId();
-        MongoCursor<Document> cursor = collection.find(id_filter)
-                .sort(ups_timestamp_sort).projection(excludeId).iterator();
-        try {
-            while (cursor.hasNext()) {
-                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
-                comments.add(jsonObject);
-            }
-        } finally {
-            cursor.close();
-        }
-        result.add("comments", comments);
+        result.add("comments", getComments(id));
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
         writer.write(result.toString());
         writer.close();
+    }
+
+    /**
+     * Method to perform the SQL query, retrieve the results and
+     * construct and return a JsonObject with the expected result
+     *
+     * @param id  The username supplied via the HttpServletRequest
+     * @return A JsonObject with the servlet's response
+     */
+    public JsonArray getComments(String id) {
+        System.out.println("hit! id:" + id);
+
+        JsonArray result = new JsonArray();
+        Bson find_filter = eq("uid", id);
+        Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
+        MongoCursor<Document> cursor = collection.find(find_filter).sort(sort_filter).projection(excludeId()).iterator();
+        try {
+           while (cursor.hasNext()) {
+                System.out.println("hit!");
+                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+                result.add(jsonObject);
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
     }
 }
 
