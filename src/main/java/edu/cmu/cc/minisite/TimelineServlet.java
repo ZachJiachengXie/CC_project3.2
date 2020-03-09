@@ -334,6 +334,9 @@ public class TimelineServlet extends HttpServlet {
         for (String uid : uids) {
             find_filters.add(eq("uid", uid));
         }
+        if (find_filters.size() == 0) {
+            return result;
+        }
         Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
         MongoCursor<Document> cursor = collection.find(or(find_filters)).sort(sort_filter).projection(excludeId()).limit(limit).iterator();
         try {
