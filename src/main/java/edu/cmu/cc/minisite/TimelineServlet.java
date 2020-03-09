@@ -2,6 +2,7 @@ package edu.cmu.cc.minisite;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import java.io.IOException;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
@@ -135,6 +136,8 @@ public class TimelineServlet extends HttpServlet {
      */
     private static final String NEO4J_PWD = System.getenv("NEO4J_PWD");
 
+    private static final JsonObject EMPTY_JSONOBJ = new JsonObject();
+
 
     /**
      * Your initialization code goes here.
@@ -209,9 +212,29 @@ public class TimelineServlet extends HttpServlet {
      * @param id user id
      * @return timeline of this user
      */
-    private String getTimeline(String id) {
+    private String getTimeline(String id)  {
         JsonObject result = new JsonObject();
         // TODO: implement this method
+        try {
+            JsonObject user = getUser(id);
+            if (user.equals(EMPTY_JSONOBJ)) {
+                // user does not exit, empty response.
+                return result.toString();
+            }
+            result = user;
+            //  Get followers
+            result.add("followers", getFollowers(id));
+            //  Get followees
+            JsonArray myFollowees = getFollowees(id);
+            JsonArray comments = new JsonArray();
+            for (JsonElement followeeElem : myFollowees) {
+                JsonObject followee = followeeElem.getAsJsonObject();
+                comments.addAll(proccessHotCommentsForUser(String.valueOf((JsonObject)followee.get("uid")), 30));
+            }
+            result.add("comments", comments);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
         return result.toString();
     }
 
@@ -221,25 +244,113 @@ public class TimelineServlet extends HttpServlet {
      * construct and return a JsonObject with the expected result
      *
      * @param name  The username supplied via the HttpServletRequest
-     * @param pwd   The password supplied via the HttpServletRequest
      * @return A JsonObject with the servlet's response
      */
-    JsonObject getUser(String name, String pwd) throws SQLException {
+    public JsonObject getUser(String name) throws SQLException {
         JsonObject result = new JsonObject();
-        String query = "SELECT * FROM users WHERE username = ? AND pwd = ?";
-        System.out.println("name:" + name + " , passwd : " + pwd);
+        String query = "SELECT * FROM users WHERE username = ?";
         PreparedStatement pstmt = redditSQLConn.prepareStatement(query);
         pstmt.setString(1, name);
-        pstmt.setString(2, pwd);
         ResultSet rs = pstmt.executeQuery();
         if (rs.next()) {
             result.addProperty("name", rs.getString("username"));
             result.addProperty("profile", rs.getString("profile_photo_url"));
-        } else {
-            result.addProperty("name", "Unauthorized");
-            result.addProperty("profile", "#");
-        }
+        } 
+        return result;
+    }
 
+    public JsonArray getFollowers(String followeeId) {
+        JsonArray followers = new JsonArray();
+        String query = "MATCH (follower:User)-[r:FOLLOWS]->(followee:User {username: \"" + followeeId + "\"}) RETURN follower.username, follower.url ORDER BY follower.username";
+        try (Session session = driver.session())
+        {
+            StatementResult result = session.run(query);
+            while (result.hasNext()) {
+                Record record = result.next();
+                JsonObject link = new JsonObject();
+                link.addProperty("name", record.get(0).asString());
+                link.addProperty("profile", record.get(1).asString());
+                followers.add(link);
+            }
+        }
+        return followers;
+    }
+
+    public JsonArray getFollowees(String followerId) {
+        JsonArray followees = new JsonArray();
+        String query = "MATCH (follower:User {username: \"" + followerId + "\"})-[r:FOLLOWS]->(followee:User) RETURN followee.username, followee.url ORDER BY followee.username";
+        try (Session session = driver.session())
+        {
+            StatementResult result = session.run(query);
+            while (result.hasNext()) {
+                Record record = result.next();
+                JsonObject link = new JsonObject();
+                link.addProperty("name", record.get(0).asString());
+                link.addProperty("profile", record.get(1).asString());
+                followees.add(link);
+            }
+        }
+        return followees;
+    }
+
+    public JsonArray proccessHotCommentsForUser(String userId, int limit) {
+        JsonArray result = new JsonArray();
+        JsonArray baseComments = getCommentsByUid(userId, limit);
+        for (JsonElement childCommentElem : baseComments) {
+            JsonObject childComment = childCommentElem.getAsJsonObject();
+            String parentId = String.valueOf(childComment.get("parent_id"));
+            JsonObject parentComment = getCommentByCid(parentId);
+
+            if (parentComment.equals(EMPTY_JSONOBJ)) {
+                // If cannot find parent in the given data, only add child and continue
+                
+            } else {
+                // If parent is present, add parent and proceed to find grandparnet.
+                childComment.add("parent", parentComment);
+                String grandParentId = String.valueOf(parentComment.get("parent_id"));
+
+                JsonObject grandParentComment = getCommentByCid(grandParentId);
+                if (!grandParentComment.equals(EMPTY_JSONOBJ)) {
+                    childComment.add("grand_parent", grandParentComment);
+                }
+            }
+            result.add(childComment);
+        }
+        return result;
+    }
+
+    public JsonArray getCommentsByUid(String uid, int limit) {
+        JsonArray result = new JsonArray();
+        Bson find_filter = eq("uid", uid);
+        Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
+        MongoCursor<Document> cursor = collection.find(find_filter).sort(sort_filter).projection(excludeId()).limit(limit).iterator();
+        try {
+           while (cursor.hasNext()) {
+                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+                result.add(jsonObject);
+            }
+        } finally {
+            cursor.close();
+        }
+        return result;
+    }
+
+    public JsonObject getCommentByCid(String cid) {
+        JsonObject result = new JsonObject();
+
+        if(cid == null || cid.isEmpty()) {
+            // cid is empty
+            return result;
+        }
+        Bson find_filter = eq("cid", cid);
+        MongoCursor<Document> cursor = collection.find(find_filter).projection(excludeId()).iterator();
+        try {
+           while (cursor.hasNext()) {
+                result = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+            }
+        } finally {
+            cursor.close();
+        }
         return result;
     }
 }
