@@ -109,6 +109,8 @@ public class HomepageServlet extends HttpServlet {
      * @return A JsonObject with the servlet's response
      */
     public JsonArray getComments(String id) {
+        System.out.println("hit! id:" + id);
+
         JsonArray result = new JsonArray();
         Bson find_filter = eq("uid", id);
         Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
