@@ -225,13 +225,16 @@ public class TimelineServlet extends HttpServlet {
             //  Get followers
             result.add("followers", getFollowers(id));
             //  Get followees
-            JsonArray myFollowees = getFollowers(id);
+            JsonArray myFollowers = getFollowers(id);
             JsonArray comments = new JsonArray();
-            for (JsonElement followeeElem : myFollowees) {
-                JsonObject followee = followeeElem.getAsJsonObject();
-                System.out.println("!!!followee: !!!" + followee.toString());
-                comments.addAll(proccessHotCommentsForUser(followee.get("name").getAsString(), 30));
+            ArrayList<String> followerIds = new ArrayList<String>();
+            for (JsonElement followerElem : myFollowers) {
+                JsonObject follower = followerElem.getAsJsonObject();
+                System.out.println("!!!follower: !!!" + follower.toString());
+                followerIds.add(follower.get("name").getAsString());
             }
+            comments.addAll(proccessHotCommentsForUser(followerIds, 30));
+
             result.add("comments", comments);
         } catch (SQLException e){
             e.printStackTrace();
@@ -294,9 +297,9 @@ public class TimelineServlet extends HttpServlet {
         return followees;
     }
 
-    public JsonArray proccessHotCommentsForUser(String userId, int limit) {
+    public JsonArray proccessHotCommentsForUser(ArrayList<String> userIds, int limit) {
         JsonArray result = new JsonArray();
-        JsonArray baseComments = getCommentsByUid(userId, limit);
+        JsonArray baseComments = getCommentsByUid(userIds, limit);
         for (JsonElement childCommentElem : baseComments) {
             JsonObject childComment = childCommentElem.getAsJsonObject();
             String parentId = childComment.get("parent_id").getAsString();
@@ -320,11 +323,14 @@ public class TimelineServlet extends HttpServlet {
         return result;
     }
 
-    public JsonArray getCommentsByUid(String uid, int limit) {
+    public JsonArray getCommentsByUid(ArrayList<String> uids, int limit) {
         JsonArray result = new JsonArray();
-        Bson find_filter = eq("uid", uid);
+        ArrayList<Bson> find_filters = new ArrayList<Bson>();
+        for (String uid : uids) {
+            find_filters.add(eq("uid", uid));
+        }
         Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
-        MongoCursor<Document> cursor = collection.find(find_filter).sort(sort_filter).projection(excludeId()).limit(limit).iterator();
+        MongoCursor<Document> cursor = collection.find(or(find_filters)).sort(sort_filter).projection(excludeId()).limit(limit).iterator();
         try {
            while (cursor.hasNext()) {
                 JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
