@@ -229,7 +229,7 @@ public class TimelineServlet extends HttpServlet {
             JsonArray comments = new JsonArray();
             for (JsonElement followeeElem : myFollowees) {
                 JsonObject followee = followeeElem.getAsJsonObject();
-                comments.addAll(proccessHotCommentsForUser(String.valueOf((JsonObject)followee.get("uid")), 30));
+                comments.addAll(proccessHotCommentsForUser(followee.get("uid").getAsString(), 30));
             }
             result.add("comments", comments);
         } catch (SQLException e){
@@ -298,7 +298,7 @@ public class TimelineServlet extends HttpServlet {
         JsonArray baseComments = getCommentsByUid(userId, limit);
         for (JsonElement childCommentElem : baseComments) {
             JsonObject childComment = childCommentElem.getAsJsonObject();
-            String parentId = String.valueOf(childComment.get("parent_id"));
+            String parentId = childComment.get("parent_id").getAsString();
             JsonObject parentComment = getCommentByCid(parentId);
 
             if (parentComment.equals(EMPTY_JSONOBJ)) {
@@ -307,7 +307,7 @@ public class TimelineServlet extends HttpServlet {
             } else {
                 // If parent is present, add parent and proceed to find grandparnet.
                 childComment.add("parent", parentComment);
-                String grandParentId = String.valueOf(parentComment.get("parent_id"));
+                String grandParentId = parentComment.get("parent_id").getAsString();
 
                 JsonObject grandParentComment = getCommentByCid(grandParentId);
                 if (!grandParentComment.equals(EMPTY_JSONOBJ)) {
