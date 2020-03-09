@@ -99,7 +99,7 @@ q3() {
   # B. A hot storage system with optimized IOPS to store BLOB content. 
   # C. Neo4j to store relationships between users. 
   # D. A warm storage system to store the most popular content.  
-  echo "CD"
+  echo "BC"
 }
 
 q4() {
