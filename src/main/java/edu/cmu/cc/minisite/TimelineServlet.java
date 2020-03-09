@@ -230,7 +230,7 @@ public class TimelineServlet extends HttpServlet {
             //  Get followers
             result.add("followers", getFollowers(id));
             //  Get followees
-            JsonArray myFollowers = getFollowers(id);
+            JsonArray myFollowers = getFollowees(id);
             JsonArray comments = new JsonArray();
             ArrayList<String> followerIds = new ArrayList<String>();
             for (JsonElement followerElem : myFollowers) {
