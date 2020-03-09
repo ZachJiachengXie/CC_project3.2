@@ -217,7 +217,7 @@ public class TimelineServlet extends HttpServlet {
      * @param id user id
      * @return timeline of this user
      */
-    private String getTimeline(String id)  {
+    public String getTimeline(String id)  {
         JsonObject result = new JsonObject();
         // TODO: implement this method
         try {
@@ -235,7 +235,6 @@ public class TimelineServlet extends HttpServlet {
             ArrayList<String> followerIds = new ArrayList<String>();
             for (JsonElement followerElem : myFollowers) {
                 JsonObject follower = followerElem.getAsJsonObject();
-                System.out.println("!!!follower: !!!" + follower.toString());
                 followerIds.add(follower.get("name").getAsString());
             }
             comments.addAll(proccessHotCommentsForUser(followerIds, 30));

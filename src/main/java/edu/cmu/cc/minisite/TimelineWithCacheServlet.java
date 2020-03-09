@@ -1,13 +1,40 @@
 package edu.cmu.cc.minisite;
 
 import com.google.gson.JsonObject;
-
+import com.google.gson.JsonElement;
+import java.io.IOException;
+import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import com.google.gson.JsonParser;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import javax.servlet.ServletException;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Sorts.descending;
+import static com.mongodb.client.model.Sorts.orderBy;
+import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Projections.excludeId;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.*;
+import java.util.Objects;
+
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.ArrayList;
+
 
 
 /**
@@ -50,6 +77,7 @@ public class TimelineWithCacheServlet extends HttpServlet {
      * Your initialization code goes here.
      */
     public TimelineWithCacheServlet() {
+        TimelineServlet worker = new TimelineServlet();
     }
 
     /**
@@ -88,10 +116,20 @@ public class TimelineWithCacheServlet extends HttpServlet {
      */
     private String getTimeline(String id) {
         // TODO: implement this method
-        JsonObject result = new JsonObject();
-        // Use the given cache variable to implement your
-        // caching mechanism.
-        return result.toString();
+        String resultStr = "";
+        resultStr = cache.get(id);
+        if (resultStr == null || resultStr.isEmpty()) {
+            // Cache miss
+            resultStr = worker.getTimeline();
+            JsonObject result = new JsonParser().parse(resultStr).getAsJsonObject();
+            JsonArray followers = result.get("followers").getAsJsonArray();
+            if (followers.size() >= 300) {
+                cache.put(id, resultStr);
+            }
+            return resultStr;
+        } else {
+            return resultStr;
+        }
     }
 }
 
