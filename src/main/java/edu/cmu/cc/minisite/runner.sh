@@ -45,7 +45,7 @@ q1() {
   # B. Dynamic Schema
   # C. Support for Indexing
   # D. Support for a Java API
-  :
+  echo "B"
 }
 
 ################################################################################
@@ -84,7 +84,7 @@ q2() {
   #    warm storage system with estimated max IOPS. 
   # D. A warm storage system with a max IOPS of 20 for 1TB of data to store all
   #    the data. 
-  : 
+  echo "C" 
 }
 
 q3() {
@@ -99,7 +99,7 @@ q3() {
   # B. A hot storage system with optimized IOPS to store BLOB content. 
   # C. Neo4j to store relationships between users. 
   # D. A warm storage system to store the most popular content.  
-  :
+  echo "CD"
 }
 
 q4() {
@@ -120,7 +120,7 @@ q4() {
   # B. At most 36% of user requests take more than 1 second.
   # C. More than 63% of user requests take more than 1 second.
   # D. 100% of user requests take more than 1 second. 
-  :
+  echo "C"
 }
 
 ################################################################################
@@ -201,7 +201,7 @@ q5() {
   # A. MySQL
   # B. Neo4j
   # C. MongoDB
-  :
+  echo "B"
 }
 
 q6() {
@@ -214,7 +214,7 @@ q6() {
   # 3. Dynamic Schema
   # 4. Native support for relationships
   # 5. Document Storage
-  :
+  echo 34
 }
 
 # SCENARIO 2:
@@ -256,7 +256,7 @@ q7() {
   # A. MySQL
   # B. Neo4j
   # C. MongoDB
-  :
+  echo "A"
 }
 
 q8() {
@@ -269,7 +269,7 @@ q8() {
   # 2. Data Integrity
   # 3. Dynamic Schema
   # 4. Document Storage
-  :
+  echo 12
 }
 
 # SCENARIO 3:
@@ -302,7 +302,7 @@ q9() {
   # A. MySQL
   # B. Neo4j
   # C. MongoDB
-  :
+  echo "C"
 }
 
 q10() {
@@ -317,7 +317,7 @@ q10() {
   # 4. Document Storage
   # 5. Support for Indexing
   # 6. High Scalability
-  :
+  echo 3456
 }
 
 ###############################################################################
