@@ -110,9 +110,12 @@ public class HomepageServlet extends HttpServlet {
      */
     public JsonArray getComments(String id) {
         JsonArray result = new JsonArray();
-        MongoCursor<Document> cursor = collection.find(eq("uid", id)).sort(orderBy(descending("ups", "timestamp"))).projection(excludeId()).iterator();
+        Bson find_filter = eq("uid", id);
+        Bson sort_filter = orderBy(descending("ups"), descending("timestamp"));
+        MongoCursor<Document> cursor = collection.find(find_filter).sort(sort_filter).projection(excludeId()).iterator();
         try {
            while (cursor.hasNext()) {
+                System.out.println("hit!");
                 JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
                 result.add(jsonObject);
             }
