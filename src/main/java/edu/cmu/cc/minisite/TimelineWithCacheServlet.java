@@ -1,5 +1,6 @@
 package edu.cmu.cc.minisite;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import java.io.IOException;
@@ -72,12 +73,13 @@ public class TimelineWithCacheServlet extends HttpServlet {
      *
      */
     private static Cache cache = new Cache();
+    private TimelineServlet worker;
 
     /**
      * Your initialization code goes here.
      */
-    public TimelineWithCacheServlet() {
-        TimelineServlet worker = new TimelineServlet();
+    public TimelineWithCacheServlet() throws ClassNotFoundException, SQLException {
+        worker = new TimelineServlet();
     }
 
     /**
@@ -120,7 +122,7 @@ public class TimelineWithCacheServlet extends HttpServlet {
         resultStr = cache.get(id);
         if (resultStr == null || resultStr.isEmpty()) {
             // Cache miss
-            resultStr = worker.getTimeline();
+            resultStr = worker.getTimeline(id);
             JsonObject result = new JsonParser().parse(resultStr).getAsJsonObject();
             JsonArray followers = result.get("followers").getAsJsonArray();
             if (followers.size() >= 300) {
