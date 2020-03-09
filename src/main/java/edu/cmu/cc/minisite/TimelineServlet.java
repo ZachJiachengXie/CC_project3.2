@@ -225,7 +225,7 @@ public class TimelineServlet extends HttpServlet {
             //  Get followers
             result.add("followers", getFollowers(id));
             //  Get followees
-            JsonArray myFollowees = getFollowees(id);
+            JsonArray myFollowees = getFollowers(id);
             JsonArray comments = new JsonArray();
             for (JsonElement followeeElem : myFollowees) {
                 JsonObject followee = followeeElem.getAsJsonObject();
