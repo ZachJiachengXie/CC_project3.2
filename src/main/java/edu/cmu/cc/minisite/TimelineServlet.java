@@ -230,7 +230,7 @@ public class TimelineServlet extends HttpServlet {
             for (JsonElement followeeElem : myFollowees) {
                 JsonObject followee = followeeElem.getAsJsonObject();
                 System.out.println("!!!followee: !!!" + followee.toString());
-                comments.addAll(proccessHotCommentsForUser(followee.get("uid").getAsString(), 30));
+                comments.addAll(proccessHotCommentsForUser(followee.get("name").getAsString(), 30));
             }
             result.add("comments", comments);
         } catch (SQLException e){
